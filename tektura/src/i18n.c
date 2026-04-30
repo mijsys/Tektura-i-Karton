@@ -44,7 +44,7 @@ static const i18n_entry translations_pl[] = {
 	{I18N_BTN_UNINSTALL,     "Odinstaluj"},
 	/* Ogólne */
 	{"compositor.name",      "Tektura"},
-	{"compositor.version",   "0.1.0"},
+	{"compositor.version",   "0.4.0"},
 	{"error.generic",        "Wystąpił błąd"},
 	{"error.permission",     "Brak uprawnień"},
 	{"window.untitled",      "(bez tytułu)"},
@@ -66,7 +66,7 @@ static const i18n_entry translations_en[] = {
 	{I18N_BTN_UNINSTALL,     "Uninstall"},
 	/* General */
 	{"compositor.name",      "Tektura"},
-	{"compositor.version",   "0.1.0"},
+	{"compositor.version",   "0.4.0"},
 	{"error.generic",        "An error occurred"},
 	{"error.permission",     "Permission denied"},
 	{"window.untitled",      "(untitled)"},
@@ -87,7 +87,7 @@ static const i18n_entry translations_de[] = {
 	{I18N_BTN_DENY,          "Ablehnen"},
 	{I18N_BTN_UNINSTALL,     "Deinstallieren"},
 	{"compositor.name",      "Tektura"},
-	{"compositor.version",   "0.1.0"},
+	{"compositor.version",   "0.4.0"},
 	{"error.generic",        "Ein Fehler ist aufgetreten"},
 	{"error.permission",     "Zugriff verweigert"},
 	{"window.untitled",      "(kein Titel)"},
