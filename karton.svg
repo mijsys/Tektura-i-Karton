@@ -1,0 +1,28 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Sciana frontowa (Cien sredni) -->
+  <path d="M10 24V48L32 58V34L10 24Z" fill="#C69C6D" stroke="#8B5E3C" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Sciana boczna (Cien najciemniejszy) -->
+  <path d="M32 34V58L54 48V24L32 34Z" fill="#A67C52" stroke="#8B5E3C" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Gora / Klapy (Najjasniejszy) -->
+  <path d="M10 24L32 14L54 24L32 34L10 24Z" fill="#DDBB99" stroke="#8B5E3C" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Linia podzialu klap na gorze -->
+  <path d="M32 14V34" stroke="#8B5E3C" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Symbol tasmy pakowej (subtelny detal) -->
+  <path d="M26 17L26 31M38 17L38 31" stroke="#8B5E3C" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+
+  <!-- Tasma glowna na gorze (sklejone klapy) -->
+  <path d="M29 14.8L35 17.6V33L29 30.2V14.8Z" fill="#E8D7B8" stroke="#9B7A52" stroke-width="1.2" stroke-linejoin="round"/>
+
+  <!-- Odblysk na tasmie dla efektu klejenia -->
+  <path d="M30.2 16.2L33.6 17.9V31.5L30.2 29.8V16.2Z" fill="#FFF7E6" opacity="0.28"/>
+
+  <!-- Tasma schodzaca na front pudla -->
+  <path d="M30 30.5L32 31.4L32 56.4L30 55.5Z" fill="#E2CCA8" stroke="#9B7A52" stroke-width="0.9" stroke-linejoin="round" opacity="0.9"/>
+
+  <!-- Delikatny cien tasmy na froncie -->
+  <path d="M31.15 31.1L31.15 56" stroke="#7A5A37" stroke-width="0.8" opacity="0.25"/>
+</svg>

@@ -1,1 +1,817 @@
-Tutaj będzie strona
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tektura i Karton</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fff6df;
+      --bg-soft: #ffe8bc;
+      --surface: #fffdf6;
+      --ink: #2f241d;
+      --muted: #6f5c4d;
+      --line: #e7c98e;
+      --teal: #27c2a5;
+      --orange: #ff8f3d;
+      --yellow: #ffd24d;
+      --red: #f55c4c;
+      --blue: #4c8cff;
+      --shadow: 0 22px 60px rgba(168, 100, 31, 0.16);
+      --radius-xl: 32px;
+      --radius-lg: 24px;
+      --radius-md: 18px;
+      --max-width: 1180px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Outfit", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(255, 210, 77, 0.75), transparent 32%),
+        radial-gradient(circle at 85% 15%, rgba(76, 140, 255, 0.22), transparent 24%),
+        linear-gradient(180deg, #fff7e6 0%, #fff1cf 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: auto;
+      border-radius: 999px;
+      z-index: -1;
+      filter: blur(6px);
+      opacity: 0.9;
+    }
+
+    body::before {
+      width: 280px;
+      height: 280px;
+      left: -80px;
+      bottom: 8vh;
+      background: rgba(39, 194, 165, 0.18);
+    }
+
+    body::after {
+      width: 220px;
+      height: 220px;
+      right: -60px;
+      top: 10vh;
+      background: rgba(245, 92, 76, 0.14);
+    }
+
+    .shell {
+      width: min(calc(100% - 32px), var(--max-width));
+      margin: 24px auto 56px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 18px;
+      background: rgba(255, 253, 246, 0.86);
+      border: 1px solid rgba(231, 201, 142, 0.8);
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      position: sticky;
+      top: 18px;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-badge {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #ffd870, #ff9f54);
+      box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.08);
+      padding: 10px;
+      flex: 0 0 auto;
+    }
+
+    .brand-copy {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 2px;
+      color: var(--muted);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.2rem;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lang-switch {
+      display: inline-flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .lang-switch button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 14px;
+      background: #f7e3b9;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .lang-switch button:hover,
+    .lang-switch button:focus-visible {
+      transform: translateY(-1px);
+      background: #ffd670;
+      box-shadow: 0 10px 22px rgba(255, 143, 61, 0.18);
+      outline: none;
+    }
+
+    .lang-switch button.active {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 28px;
+      align-items: stretch;
+      margin-top: 28px;
+    }
+
+    .hero-copy,
+    .hero-panel,
+    .card,
+    .status-panel {
+      background: var(--surface);
+      border: 1px solid rgba(231, 201, 142, 0.9);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-copy {
+      padding: 38px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      width: 210px;
+      height: 210px;
+      background: linear-gradient(135deg, rgba(76, 140, 255, 0.22), rgba(39, 194, 165, 0.14));
+      border-radius: 30px;
+      transform: rotate(18deg);
+      top: -68px;
+      right: -46px;
+    }
+
+    .hero-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: #fff0c9;
+      color: #8f5c1d;
+      font-size: 0.92rem;
+      font-weight: 700;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 {
+      margin: 18px 0 16px;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4.8rem);
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero p {
+      margin: 0;
+      font-size: 1.12rem;
+      line-height: 1.7;
+      color: var(--muted);
+      max-width: 60ch;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: 0 20px;
+      border-radius: 18px;
+      text-decoration: none;
+      font-weight: 700;
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .button.primary {
+      background: var(--orange);
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(255, 143, 61, 0.28);
+    }
+
+    .button.secondary {
+      background: #fff1d4;
+      color: var(--ink);
+    }
+
+    .button:hover,
+    .button:focus-visible {
+      transform: translateY(-2px);
+      outline: none;
+    }
+
+    .hero-panel {
+      padding: 24px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .logo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .logo-card {
+      border-radius: 24px;
+      padding: 18px;
+      min-height: 172px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .logo-card.tektura {
+      background: linear-gradient(180deg, #ffe7bb, #ffd18f);
+    }
+
+    .logo-card.karton {
+      background: linear-gradient(180deg, #c9f5ec, #9de6d9);
+    }
+
+    .logo-card img {
+      width: 68px;
+      height: 68px;
+    }
+
+    .logo-card h2,
+    .logo-card p,
+    .mini-card h3,
+    .mini-card p,
+    .card h2,
+    .card p,
+    .card li,
+    .status-panel h2,
+    .status-panel p {
+      margin: 0;
+    }
+
+    .logo-card h2,
+    .card h2,
+    .status-panel h2 {
+      font-family: "Space Grotesk", sans-serif;
+    }
+
+    .logo-card p,
+    .mini-card p,
+    .card p,
+    .status-panel p,
+    .card li {
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .mini-card {
+      display: grid;
+      gap: 8px;
+      padding: 18px;
+      border-radius: 22px;
+      background: #fff5de;
+      border: 1px dashed #e6be72;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+      margin-top: 28px;
+    }
+
+    .card {
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      width: 72px;
+      height: 72px;
+      border-radius: 22px;
+      top: -18px;
+      right: -12px;
+      opacity: 0.18;
+      transform: rotate(24deg);
+    }
+
+    .card.feature-a::before {
+      background: var(--orange);
+    }
+
+    .card.feature-b::before {
+      background: var(--teal);
+    }
+
+    .card.feature-c::before {
+      background: var(--blue);
+    }
+
+    .tag {
+      display: inline-flex;
+      width: fit-content;
+      margin-bottom: 14px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: #fff0c9;
+      color: #9a611d;
+    }
+
+    .card ul {
+      margin: 18px 0 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .status-panel {
+      margin-top: 28px;
+      padding: 30px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .status-headline {
+      display: grid;
+      gap: 14px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .chip {
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      background: #fff2cf;
+      color: #8f5b17;
+    }
+
+    .status-stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .stack-item {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(180deg, #fff7e6, #fff1d3);
+      border: 1px solid var(--line);
+    }
+
+    .stack-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+
+    .footer-note {
+      margin-top: 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      animation: cardIn 600ms ease forwards;
+    }
+
+    .delay-1 { animation-delay: 80ms; }
+    .delay-2 { animation-delay: 160ms; }
+    .delay-3 { animation-delay: 240ms; }
+    .delay-4 { animation-delay: 320ms; }
+    .delay-5 { animation-delay: 400ms; }
+
+    @keyframes cardIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .hero,
+      .status-panel,
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(calc(100% - 20px), var(--max-width));
+        margin-top: 14px;
+      }
+
+      .topbar {
+        border-radius: 26px;
+        padding: 16px;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .hero-copy,
+      .hero-panel,
+      .card,
+      .status-panel {
+        border-radius: 24px;
+      }
+
+      .hero-copy,
+      .card,
+      .status-panel {
+        padding: 24px;
+      }
+
+      .logo-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      .button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar reveal">
+      <div class="brand">
+        <div class="brand-badge">
+          <img src="tektura/tektura.svg" alt="Tektura logo">
+        </div>
+        <div class="brand-copy">
+          <p class="eyebrow" data-i18n="top.eyebrow">Wayland compositor project</p>
+          <p class="brand-title" data-i18n="top.title">Tektura for Karton</p>
+        </div>
+      </div>
+      <div class="lang-switch" aria-label="Language switcher">
+        <button type="button" class="active" data-lang="pl">PL</button>
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <article class="hero-copy reveal delay-1">
+          <div class="hero-kicker" data-i18n="hero.kicker">Kolorowy, płaski kierunek wizualny dla własnego desktopu</div>
+          <h1 data-i18n="hero.title">Tektura buduje fundament. Karton buduje całe środowisko.</h1>
+          <p data-i18n="hero.body">Tektura to nasz kompozytor Wayland dla projektu Karton. Odpowiada za renderowanie, fokus, okna, wyjścia, protokoły, bezpieczeństwo i bazowe zachowanie sesji. Nad pełnym środowiskiem Karton nadal trwają prace.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#status" data-i18n="hero.primary">Zobacz status projektu</a>
+            <a class="button secondary" href="#roles" data-i18n="hero.secondary">Jak dzielimy odpowiedzialność</a>
+          </div>
+        </article>
+
+        <aside class="hero-panel reveal delay-2">
+          <div class="logo-grid">
+            <section class="logo-card tektura">
+              <img src="tektura/tektura.svg" alt="Tektura logo">
+              <div>
+                <h2>Tektura</h2>
+                <p data-i18n="panel.tektura">Kompozytor Wayland i rdzeń sesji graficznej.</p>
+              </div>
+            </section>
+            <section class="logo-card karton">
+              <img src="karton.svg" alt="Karton logo">
+              <div>
+                <h2>Karton</h2>
+                <p data-i18n="panel.karton">Środowisko desktopowe, które ubiera całość w spójny interfejs.</p>
+              </div>
+            </section>
+          </div>
+          <section class="mini-card">
+            <h3 data-i18n="mini.title">Aktualny kierunek</h3>
+            <p data-i18n="mini.body">Najpierw dopinamy solidny kompozytor, a równolegle przygotowujemy warstwę środowiska: panel, dock, ustawienia, tapety i resztę UI.</p>
+          </section>
+        </aside>
+      </section>
+
+      <section class="content-grid" id="roles">
+        <article class="card feature-a reveal delay-2">
+          <div class="tag" data-i18n="roles.a.tag">Tektura</div>
+          <h2 data-i18n="roles.a.title">Za co odpowiada kompozytor</h2>
+          <p data-i18n="roles.a.body">Kompozytor jest warstwą systemową. Kontroluje okna, fokus, układ monitorów, wejście, zabezpieczenia, blokadę ekranu, przestrzenie robocze i obsługę protokołów.</p>
+          <ul>
+            <li data-i18n="roles.a.item1">Wayland, Xwayland i zarządzanie sesją</li>
+            <li data-i18n="roles.a.item2">Bezpieczeństwo, IPC i polityka uprawnień</li>
+            <li data-i18n="roles.a.item3">Rysowanie dekoracji lub narzucenie zasad stylu okien</li>
+          </ul>
+        </article>
+
+        <article class="card feature-b reveal delay-3">
+          <div class="tag" data-i18n="roles.b.tag">Karton</div>
+          <h2 data-i18n="roles.b.title">Za co odpowiada środowisko</h2>
+          <p data-i18n="roles.b.body">Środowisko desktopowe buduje odczucie całości. To tutaj zwykle trafiają panel, launcher, dock, centrum sterowania, powiadomienia, tapety i wizualny charakter pulpitu.</p>
+          <ul>
+            <li data-i18n="roles.b.item1">Topbar, dock, app launcher i ustawienia</li>
+            <li data-i18n="roles.b.item2">Spójny język wizualny całego pulpitu</li>
+            <li data-i18n="roles.b.item3">Warstwa UI korzystająca z IPC i layer-shell</li>
+          </ul>
+        </article>
+
+        <article class="card feature-c reveal delay-4">
+          <div class="tag" data-i18n="roles.c.tag">Stylowanie</div>
+          <h2 data-i18n="roles.c.title">Czy kompozytor może narzucić styl</h2>
+          <p data-i18n="roles.c.body">Tak, ale najlepiej robić to świadomie. Kompozytor może stylować dekoracje okien, animacje, cienie, obramowania i reguły rozmieszczenia. Pełny wygląd desktopu nadal lepiej zostawić środowisku.</p>
+          <ul>
+            <li data-i18n="roles.c.item1">Kompozytor może nadać charakter ramkom i przejściom</li>
+            <li data-i18n="roles.c.item2">Środowisko powinno odpowiadać za UI wysokiego poziomu</li>
+            <li data-i18n="roles.c.item3">Najlepszy efekt daje podział: silnik w Tekturze, wygląd całości w Kartonie</li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="status-panel reveal delay-5" id="status">
+        <div class="status-headline">
+          <div class="tag" data-i18n="status.tag">Status</div>
+          <h2 data-i18n="status.title">Kompozytor jest aktywnie rozwijany, a środowisko Karton jest w budowie.</h2>
+          <p data-i18n="status.body">Tektura dojrzewa jako własny kompozytor Wayland z naciskiem na modularność, bezpieczeństwo, IPC, wielojęzyczność i kontrolę wyglądu okien. Karton rośnie na tej bazie jako pełne środowisko desktopowe.</p>
+          <div class="chips">
+            <span class="chip" data-i18n="status.chip1">Wayland compositor</span>
+            <span class="chip" data-i18n="status.chip2">Colorful flat style</span>
+            <span class="chip" data-i18n="status.chip3">PL / EN / DE</span>
+          </div>
+        </div>
+
+        <div class="status-stack">
+          <article class="stack-item">
+            <strong data-i18n="stack.1.title">Teraz</strong>
+            <p data-i18n="stack.1.body">Dopracowanie Tektury jako solidnego rdzenia sesji, z własnym zachowaniem, dekoracjami i warstwą komunikacji.</p>
+          </article>
+          <article class="stack-item">
+            <strong data-i18n="stack.2.title">W toku</strong>
+            <p data-i18n="stack.2.body">Prace nad Kartonem jako kompletnym środowiskiem: interfejs, narzędzia systemowe, shell i spójna estetyka pulpitu.</p>
+          </article>
+          <article class="stack-item">
+            <strong data-i18n="stack.3.title">Cel</strong>
+            <p data-i18n="stack.3.body">Własny desktop, w którym kompozytor i środowisko współpracują, ale nie mieszają sobie odpowiedzialności.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <p class="footer-note reveal delay-5" data-i18n="footer.note">Projekt Karton i kompozytor Tektura są rozwijane wspólnie, ale z wyraźnym podziałem ról: stabilny silnik na dole, wyrazisty interfejs na górze.</p>
+  </div>
+
+  <script>
+    const translations = {
+      pl: {
+        "top.eyebrow": "Wayland compositor project",
+        "top.title": "Tektura dla Kartona",
+        "hero.kicker": "Kolorowy, płaski kierunek wizualny dla własnego desktopu",
+        "hero.title": "Tektura buduje fundament. Karton buduje całe środowisko.",
+        "hero.body": "Tektura to nasz kompozytor Wayland dla projektu Karton. Odpowiada za renderowanie, fokus, okna, wyjścia, protokoły, bezpieczeństwo i bazowe zachowanie sesji. Nad pełnym środowiskiem Karton nadal trwają prace.",
+        "hero.primary": "Zobacz status projektu",
+        "hero.secondary": "Jak dzielimy odpowiedzialność",
+        "panel.tektura": "Kompozytor Wayland i rdzeń sesji graficznej.",
+        "panel.karton": "Środowisko desktopowe, które ubiera całość w spójny interfejs.",
+        "mini.title": "Aktualny kierunek",
+        "mini.body": "Najpierw dopinamy solidny kompozytor, a równolegle przygotowujemy warstwę środowiska: panel, dock, ustawienia, tapety i resztę UI.",
+        "roles.a.tag": "Tektura",
+        "roles.a.title": "Za co odpowiada kompozytor",
+        "roles.a.body": "Kompozytor jest warstwą systemową. Kontroluje okna, fokus, układ monitorów, wejście, zabezpieczenia, blokadę ekranu, przestrzenie robocze i obsługę protokołów.",
+        "roles.a.item1": "Wayland, Xwayland i zarządzanie sesją",
+        "roles.a.item2": "Bezpieczeństwo, IPC i polityka uprawnień",
+        "roles.a.item3": "Rysowanie dekoracji lub narzucenie zasad stylu okien",
+        "roles.b.tag": "Karton",
+        "roles.b.title": "Za co odpowiada środowisko",
+        "roles.b.body": "Środowisko desktopowe buduje odczucie całości. To tutaj zwykle trafiają panel, launcher, dock, centrum sterowania, powiadomienia, tapety i wizualny charakter pulpitu.",
+        "roles.b.item1": "Topbar, dock, app launcher i ustawienia",
+        "roles.b.item2": "Spójny język wizualny całego pulpitu",
+        "roles.b.item3": "Warstwa UI korzystająca z IPC i layer-shell",
+        "roles.c.tag": "Stylowanie",
+        "roles.c.title": "Czy kompozytor może narzucić styl",
+        "roles.c.body": "Tak, ale najlepiej robić to świadomie. Kompozytor może stylować dekoracje okien, animacje, cienie, obramowania i reguły rozmieszczenia. Pełny wygląd desktopu nadal lepiej zostawić środowisku.",
+        "roles.c.item1": "Kompozytor może nadać charakter ramkom i przejściom",
+        "roles.c.item2": "Środowisko powinno odpowiadać za UI wysokiego poziomu",
+        "roles.c.item3": "Najlepszy efekt daje podział: silnik w Tekturze, wygląd całości w Kartonie",
+        "status.tag": "Status",
+        "status.title": "Kompozytor jest aktywnie rozwijany, a środowisko Karton jest w budowie.",
+        "status.body": "Tektura dojrzewa jako własny kompozytor Wayland z naciskiem na modularność, bezpieczeństwo, IPC, wielojęzyczność i kontrolę wyglądu okien. Karton rośnie na tej bazie jako pełne środowisko desktopowe.",
+        "status.chip1": "Wayland compositor",
+        "status.chip2": "Colorful flat style",
+        "status.chip3": "PL / EN / DE",
+        "stack.1.title": "Teraz",
+        "stack.1.body": "Dopracowanie Tektury jako solidnego rdzenia sesji, z własnym zachowaniem, dekoracjami i warstwą komunikacji.",
+        "stack.2.title": "W toku",
+        "stack.2.body": "Prace nad Kartonem jako kompletnym środowiskiem: interfejs, narzędzia systemowe, shell i spójna estetyka pulpitu.",
+        "stack.3.title": "Cel",
+        "stack.3.body": "Własny desktop, w którym kompozytor i środowisko współpracują, ale nie mieszają sobie odpowiedzialności.",
+        "footer.note": "Projekt Karton i kompozytor Tektura są rozwijane wspólnie, ale z wyraźnym podziałem ról: stabilny silnik na dole, wyrazisty interfejs na górze."
+      },
+      en: {
+        "top.eyebrow": "Wayland compositor project",
+        "top.title": "Tektura for Karton",
+        "hero.kicker": "A colorful flat visual direction for a custom desktop",
+        "hero.title": "Tektura builds the foundation. Karton builds the whole environment.",
+        "hero.body": "Tektura is our Wayland compositor for the Karton project. It handles rendering, focus, windows, outputs, protocols, security and the core session behavior. Work on the full Karton desktop environment is still in progress.",
+        "hero.primary": "See project status",
+        "hero.secondary": "How responsibilities are split",
+        "panel.tektura": "Wayland compositor and the core of the graphical session.",
+        "panel.karton": "Desktop environment layer that gives the whole system a coherent interface.",
+        "mini.title": "Current direction",
+        "mini.body": "First we finish a solid compositor, and in parallel we prepare the environment layer: panel, dock, settings, wallpapers and the rest of the UI.",
+        "roles.a.tag": "Tektura",
+        "roles.a.title": "What the compositor is responsible for",
+        "roles.a.body": "The compositor is the system layer. It controls windows, focus, monitor layout, input, security, screen locking, workspaces and protocol handling.",
+        "roles.a.item1": "Wayland, Xwayland and session management",
+        "roles.a.item2": "Security, IPC and permission policy",
+        "roles.a.item3": "Drawing decorations or enforcing window style rules",
+        "roles.b.tag": "Karton",
+        "roles.b.title": "What the environment is responsible for",
+        "roles.b.body": "The desktop environment shapes the feeling of the whole system. This is usually where the panel, launcher, dock, control center, notifications, wallpapers and the overall visual language belong.",
+        "roles.b.item1": "Top bar, dock, app launcher and settings",
+        "roles.b.item2": "A coherent visual language for the whole desktop",
+        "roles.b.item3": "A UI layer built on IPC and layer-shell",
+        "roles.c.tag": "Styling",
+        "roles.c.title": "Can the compositor enforce styling",
+        "roles.c.body": "Yes, but it should be done deliberately. The compositor can style window decorations, animations, shadows, borders and placement rules. The full look of the desktop is still better owned by the environment.",
+        "roles.c.item1": "The compositor can give frames and transitions a recognizable character",
+        "roles.c.item2": "The environment should own high-level UI",
+        "roles.c.item3": "The best split is: engine in Tektura, full desktop look in Karton",
+        "status.tag": "Status",
+        "status.title": "The compositor is being actively developed, and the Karton environment is under construction.",
+        "status.body": "Tektura is maturing into its own Wayland compositor with a focus on modularity, security, IPC, multilingual support and control over window appearance. Karton grows on top of that base as a full desktop environment.",
+        "status.chip1": "Wayland compositor",
+        "status.chip2": "Colorful flat style",
+        "status.chip3": "PL / EN / DE",
+        "stack.1.title": "Now",
+        "stack.1.body": "Refining Tektura as a solid session core with its own behavior, decorations and communication layer.",
+        "stack.2.title": "In progress",
+        "stack.2.body": "Building Karton as a complete environment: interface, system tools, shell and a coherent desktop aesthetic.",
+        "stack.3.title": "Goal",
+        "stack.3.body": "A custom desktop where the compositor and environment cooperate without blurring responsibilities.",
+        "footer.note": "The Karton project and the Tektura compositor are developed together, but with a clear split of roles: a stable engine below, a distinctive interface above."
+      },
+      de: {
+        "top.eyebrow": "Wayland-Compositor-Projekt",
+        "top.title": "Tektura fur Karton",
+        "hero.kicker": "Eine farbige Flat-Design-Richtung fur einen eigenen Desktop",
+        "hero.title": "Tektura baut das Fundament. Karton baut die ganze Umgebung.",
+        "hero.body": "Tektura ist unser Wayland-Compositor fur das Karton-Projekt. Er ist fur Rendering, Fokus, Fenster, Ausgange, Protokolle, Sicherheit und das Grundverhalten der Sitzung zustandig. An der vollstandigen Karton-Desktop-Umgebung wird noch gearbeitet.",
+        "hero.primary": "Projektstatus ansehen",
+        "hero.secondary": "Aufgabenteilung ansehen",
+        "panel.tektura": "Wayland-Compositor und Kern der grafischen Sitzung.",
+        "panel.karton": "Desktop-Umgebungsschicht, die dem Gesamtsystem ein stimmiges Interface gibt.",
+        "mini.title": "Aktuelle Richtung",
+        "mini.body": "Zuerst schliessen wir einen soliden Compositor ab, parallel dazu bereiten wir die Umgebungsschicht vor: Panel, Dock, Einstellungen, Hintergrunde und den Rest der UI.",
+        "roles.a.tag": "Tektura",
+        "roles.a.title": "Wofur der Compositor zustandig ist",
+        "roles.a.body": "Der Compositor ist die Systemschicht. Er kontrolliert Fenster, Fokus, Monitorlayout, Eingaben, Sicherheit, Bildschirmsperre, Arbeitsflachen und Protokollunterstutzung.",
+        "roles.a.item1": "Wayland, Xwayland und Sitzungsverwaltung",
+        "roles.a.item2": "Sicherheit, IPC und Berechtigungspolitik",
+        "roles.a.item3": "Fensterdekorationen zeichnen oder Stilregeln erzwingen",
+        "roles.b.tag": "Karton",
+        "roles.b.title": "Wofur die Umgebung zustandig ist",
+        "roles.b.body": "Die Desktop-Umgebung bestimmt das Gesamtgefuhl des Systems. Hier gehoren normalerweise Panel, Launcher, Dock, Kontrollzentrum, Benachrichtigungen, Hintergrunde und die gesamte visuelle Sprache hin.",
+        "roles.b.item1": "Topbar, Dock, App-Launcher und Einstellungen",
+        "roles.b.item2": "Eine stimmige visuelle Sprache fur den ganzen Desktop",
+        "roles.b.item3": "Eine UI-Schicht auf Basis von IPC und layer-shell",
+        "roles.c.tag": "Styling",
+        "roles.c.title": "Kann der Compositor den Stil vorgeben",
+        "roles.c.body": "Ja, aber bewusst. Der Compositor kann Fensterdekorationen, Animationen, Schatten, Rahmen und Platzierungsregeln stylen. Das vollstandige Erscheinungsbild des Desktops sollte trotzdem eher der Umgebung gehoren.",
+        "roles.c.item1": "Der Compositor kann Rahmen und Ubergangen einen erkennbaren Charakter geben",
+        "roles.c.item2": "Die Umgebung sollte die hochstufige UI besitzen",
+        "roles.c.item3": "Die beste Aufteilung ist: Engine in Tektura, Gesamtoptik in Karton",
+        "status.tag": "Status",
+        "status.title": "Der Compositor wird aktiv entwickelt, und die Karton-Umgebung ist im Aufbau.",
+        "status.body": "Tektura reift zu einem eigenen Wayland-Compositor mit Fokus auf Modularitat, Sicherheit, IPC, Mehrsprachigkeit und Kontrolle uber das Aussehen der Fenster. Karton wachst darauf aufbauend als vollstandige Desktop-Umgebung.",
+        "status.chip1": "Wayland-Compositor",
+        "status.chip2": "Colorful flat style",
+        "status.chip3": "PL / EN / DE",
+        "stack.1.title": "Jetzt",
+        "stack.1.body": "Tektura als soliden Sitzungskern mit eigenem Verhalten, Dekorationen und Kommunikationsschicht ausarbeiten.",
+        "stack.2.title": "In Arbeit",
+        "stack.2.body": "Karton als vollstandige Umgebung bauen: Interface, Systemwerkzeuge, Shell und eine stimmige Desktop-Asthetik.",
+        "stack.3.title": "Ziel",
+        "stack.3.body": "Ein eigener Desktop, in dem Compositor und Umgebung zusammenarbeiten, ohne ihre Verantwortungen zu vermischen.",
+        "footer.note": "Das Karton-Projekt und der Tektura-Compositor werden gemeinsam entwickelt, aber mit klarer Rollentrennung: eine stabile Engine unten, ein markantes Interface oben."
+      }
+    };
+
+    const elements = document.querySelectorAll("[data-i18n]");
+    const buttons = document.querySelectorAll("[data-lang]");
+
+    function applyLanguage(lang) {
+      const dictionary = translations[lang] || translations.pl;
+      document.documentElement.lang = lang;
+      elements.forEach((element) => {
+        const key = element.dataset.i18n;
+        if (dictionary[key]) {
+          element.textContent = dictionary[key];
+        }
+      });
+      buttons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.lang === lang);
+      });
+      localStorage.setItem("karton-lang", lang);
+    }
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => applyLanguage(button.dataset.lang));
+    });
+
+    applyLanguage(localStorage.getItem("karton-lang") || "pl");
+  </script>
+</body>
+</html>
