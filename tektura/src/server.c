@@ -38,6 +38,9 @@ static void on_permission_response(struct tektura_server *server,
 	secmgr_set_permission(server->security_manager, app_path,
 		(tektura_capability)cap_id,
 		(tektura_permission_state)state);
+	/* Usuń z tabeli oczekujących — shell odpowiedział */
+	secmgr_clear_pending(server->security_manager, app_path,
+		(tektura_capability)cap_id);
 	wlr_log(WLR_INFO, "server: IPC permission_response pid=%d cap=%d state=%d",
 		(int)app_pid, cap_id, state);
 }

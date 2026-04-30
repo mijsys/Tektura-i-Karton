@@ -80,15 +80,26 @@ if (result.state == PERM_DENIED) {
 return false;
 }
 
-/* Powiadom shell/panel o konieczności promptu */
-if (server->ipc && (result.state == PERM_UNSET || result.prompt_pending)) {
+/* Powiadom shell/panel o konieczności promptu — tylko jeśli jeszcze nie czekamy */
+if (server->ipc && result.state == PERM_UNSET) {
 char app_path[SECMGR_MAX_PATH] = {0};
 if (!secmgr_pid_to_path(pid, app_path, sizeof(app_path))) {
 snprintf(app_path, sizeof(app_path), "pid:%d", (int)pid);
 }
+if (!secmgr_is_pending(server->security_manager, app_path, cap)) {
+/* Pierwsze żądanie — oznacz jako oczekujące i powiadom shella */
+secmgr_mark_pending(server->security_manager, app_path, cap);
 char payload[IPC_MAX_MSG_SIZE];
 snprintf(payload, sizeof(payload), "%d %d %s", (int)pid, (int)cap, app_path);
 ipc_broadcast_event(server->ipc, IPC_EVENT_PERMISSION_REQUEST, payload);
+wlr_log(WLR_INFO,
+"protocols: wysłano żądanie zgody dla PID=%d cap='%s', czekam na odpowiedź shella.",
+(int)pid, secmgr_capability_name(cap));
+} else {
+wlr_log(WLR_DEBUG,
+"protocols: PID=%d cap='%s' — prompt już wysłany, blokuję cicho.",
+(int)pid, secmgr_capability_name(cap));
+}
 }
 
 wlr_log(WLR_INFO,

@@ -149,6 +149,27 @@ const char *secmgr_capability_name(tektura_capability cap);
 bool secmgr_pid_to_path(pid_t pid, char *buf, size_t buf_size);
 
 /*
+ * Oznacza parę (app_path, cap) jako "oczekującą na odpowiedź shella".
+ * Wywołaj po wysłaniu IPC_EVENT_PERMISSION_REQUEST — zapobiega duplikatom.
+ */
+void secmgr_mark_pending(tektura_security_manager *mgr,
+	const char *app_path, tektura_capability cap);
+
+/*
+ * Usuwa parę (app_path, cap) z tabeli oczekujących.
+ * Wywołaj po otrzymaniu odpowiedzi od shella przez on_permission_response.
+ */
+void secmgr_clear_pending(tektura_security_manager *mgr,
+	const char *app_path, tektura_capability cap);
+
+/*
+ * Zwraca true, jeśli żądanie dla (app_path, cap) jest już oczekujące,
+ * tzn. shell został już powiadomiony i czekamy na odpowiedź.
+ */
+bool secmgr_is_pending(tektura_security_manager *mgr,
+	const char *app_path, tektura_capability cap);
+
+/*
  * Niszczy security managera: zapisuje bazę (z nowym podpisem HMAC),
  * zwalnia blokadę flock, zamyka socket.
  */

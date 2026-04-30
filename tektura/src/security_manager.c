@@ -74,6 +74,13 @@ typedef struct {
 /* Struktura wewnętrzna managera                                        */
 /* ------------------------------------------------------------------ */
 
+#define MAX_PENDING 64
+
+typedef struct {
+	char             app_path[SECMGR_MAX_PATH];
+	tektura_capability cap;
+} pending_prompt;
+
 struct tektura_security_manager {
 	struct tektura_server *server;
 
@@ -89,9 +96,14 @@ struct tektura_security_manager {
 	tektura_perm_record *records;
 	uint32_t             record_count;
 
+	/* Oczekujące prompty — para (app_path, cap) dla których shell już powiadomiony */
+	pending_prompt pending[MAX_PENDING];
+	int             pending_count;
+
 	/* Zdarzenia Wayland dla socket-listenera */
 	struct wl_event_source *sock_event;
 };
+
 
 /* ------------------------------------------------------------------ */
 /* Funkcje pomocnicze — ścieżki                                        */
@@ -364,7 +376,6 @@ static tektura_perm_record *find_or_create_record(tektura_security_manager *mgr,
  *   - czy PID nadawcy należy do zaufanej binarki (np. karton-settings)
  *   - lub czy klient wysłał właściwy credential (SO_PEERCRED)
  */
-
 static bool is_trusted_client(int client_fd) {
 	struct ucred cred;
 	socklen_t len = sizeof(cred);
@@ -381,12 +392,27 @@ static bool is_trusted_client(int client_fd) {
 	if (!secmgr_pid_to_path(cred.pid, client_path, sizeof(client_path))) {
 		return false;
 	}
-	/*
-	 * TODO: porównaj client_path z listą zaufanych binarek
-	 * (np. /usr/bin/karton-settings). Na razie akceptuj każdego
-	 * procesu tego samego użytkownika.
-	 */
-	wlr_log(WLR_DEBUG, "secmgr: socket klient PID=%d path=%s", cred.pid, client_path);
+	/* Lista zaufanych binarek Karton */
+	static const char * const trusted_binaries[] = {
+		"karton-settings",
+		"karton-shell",
+		"karton-session",
+		"karton-lock",
+		"karton-polkit",
+		NULL,
+	};
+	const char *basename_ptr = strrchr(client_path, '/');
+	const char *bin_name = basename_ptr ? basename_ptr + 1 : client_path;
+	bool trusted = false;
+	for (int i = 0; trusted_binaries[i]; i++) {
+		if (strcmp(bin_name, trusted_binaries[i]) == 0) { trusted = true; break; }
+	}
+	if (!trusted) {
+		wlr_log(WLR_ERROR,
+			"secmgr: socket — binarki '%s' nie ma na liście zaufanych", client_path);
+		return false;
+	}
+	wlr_log(WLR_DEBUG, "secmgr: socket klient PID=%d path=%s — zaufany", cred.pid, client_path);
 	return true;
 }
 
@@ -620,10 +646,46 @@ bool secmgr_pid_to_path(pid_t pid, char *buf, size_t buf_size) {
 	return true;
 }
 
-void secmgr_destroy(tektura_security_manager *mgr) {
-	if (!mgr) {
+/* ------------------------------------------------------------------ */
+/* Zarządzanie tabelą oczekujących promptów                            */
+/* ------------------------------------------------------------------ */
+
+bool secmgr_is_pending(tektura_security_manager *mgr,
+		const char *app_path, tektura_capability cap) {
+	for (int i = 0; i < mgr->pending_count; i++) {
+		if (mgr->pending[i].cap == cap &&
+		    strncmp(mgr->pending[i].app_path, app_path, SECMGR_MAX_PATH) == 0)
+			return true;
+	}
+	return false;
+}
+
+void secmgr_mark_pending(tektura_security_manager *mgr,
+		const char *app_path, tektura_capability cap) {
+	if (secmgr_is_pending(mgr, app_path, cap)) return;
+	if (mgr->pending_count >= MAX_PENDING) {
+		wlr_log(WLR_ERROR, "secmgr: pending table pełna dla %s", app_path);
 		return;
 	}
+	pending_prompt *p = &mgr->pending[mgr->pending_count++];
+	strncpy(p->app_path, app_path, SECMGR_MAX_PATH - 1);
+	p->app_path[SECMGR_MAX_PATH - 1] = '\0';
+	p->cap = cap;
+}
+
+void secmgr_clear_pending(tektura_security_manager *mgr,
+		const char *app_path, tektura_capability cap) {
+	for (int i = 0; i < mgr->pending_count; i++) {
+		if (mgr->pending[i].cap == cap &&
+		    strncmp(mgr->pending[i].app_path, app_path, SECMGR_MAX_PATH) == 0) {
+			mgr->pending[i] = mgr->pending[--mgr->pending_count];
+			return;
+		}
+	}
+}
+
+void secmgr_destroy(tektura_security_manager *mgr) {
+	if (!mgr) return;
 	if (mgr->sock_event) {
 		wl_event_source_remove(mgr->sock_event);
 	}

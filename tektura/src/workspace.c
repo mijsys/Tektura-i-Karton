@@ -36,7 +36,7 @@ struct tektura_workspace_manager {
 
 /*
  * Ustawia widoczność wszystkich okien należących do workspace'u.
- * Okna "pinned" (scene_tree->node.data == NULL — TODO) są zawsze widoczne.
+ * Okna przypięte (toplevel->pinned == true) są zawsze widoczne.
  */
 static void ws_apply_visibility(tektura_workspace_manager *mgr,
 		tektura_workspace *ws, bool visible) {

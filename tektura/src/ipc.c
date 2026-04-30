@@ -6,7 +6,15 @@
  *
  * Każdy klient po połączeniu musi:
  *   1. Wysłać "HELLO <token_hex>\n" w ciągu 2 sekund.
- *   2. Podpisać każdą kolejną wiadomość (opcionalnie — TODO faza 2).
+ *   2. Podpisywać każdą kolejną wiadomość HMAC-SHA256:
+ *        "<hmac_hex> <seq_hex> <treść>\n"
+ *      gdzie hmac = HMAC-SHA256(session_token, "<seq_hex>:<treść>"),
+ *      a seq to 64-bitowy licznik chroniący przed atakami powtarzania
+ *        "<hmac_hex> <seq_hex> <treść>\n"
+ *      gdzie:
+ *        hmac  = HMAC-SHA256(session_token, "<seq_hex>:<treść>")
+ *        seq   = 64-bitowy licznik wiadomości, rośnie o 1 przy każdej
+ *                wiadomości; chroni przed atakami powtarzania.
  * Token sesji jest generowany przy starcie kompozytora z /dev/urandom
  * i przekazywany zaufanym procesom przez zmienną środowiskową.
  */
@@ -30,6 +38,16 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <openssl/hmac.h>
+#include <openssl/shaat.h>
+#include <sys/un.h>
+#include <time.h>
+#incl64_t seq_recv;            /* licznik odebranych wiadomości  */
+	uintude <unistd.h>
+
+#include <inttypes.h>
+#include <openssl/crypto.h>
+#include <openssl/hmac.h>
 #include <wlr/util/log.h>
 
 /* ------------------------------------------------------------------ */
@@ -39,6 +57,7 @@
 typedef struct {
 	int      fd;
 	bool     authenticated;       /* czy przeszedł HELLO?          */
+	uint64_t seq_recv;            /* licznik odebranych wiadomości  */
 	uint32_t subscriptions;       /* maska bitowa tektura_ipc_event */
 	char     read_buf[IPC_MAX_MSG_SIZE];
 	size_t   read_len;
@@ -302,6 +321,82 @@ static void handle_query(ipc_client *c, const char *query_str) {
 			if (n < 0 || (size_t)n >= sizeof(payload) - off) break;
 			off += (size_t)n;
 		}
+/* ------------------------------------------------------------------ */
+/* Weryfikacja HMAC-SHA256 wiadomości od klienta                       */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Weryfikuje i rozpakowuje wiadomość z podpisem.
+ * Protokół (po HELLO): "<hmac64_hex> <seq_hex> <treść>\n"
+ *   - hmac = HMAC-SHA256(session_token, "<seq_hex>:<treść>")
+ *   - seq  = 16-cyfrowy hex licznika wiadomości (rośnie o 1)
+ *
+ * W razie powodzenia zapisuje odszyfrowaną treść do `out` (maks. out_size)
+ * i zwraca true. W razie nieprawidłowego podpisu lub powtarza seq → false.
+ */
+static bool verify_message_hmac(ipc_client *c, const char *line,
+		char *out, size_t out_size) {
+	char hmac_hex[65];   /* 32 bajty → 64 cyfry hex + \0 */
+	char seq_hex[17];    /* uint64 → 16 cyfr hex + \0    */
+	const char *content_start;
+
+	/* Parsuj: <hmac_hex(64)> <seq_hex(16)> <reszta> */
+	if (sscanf(line, "%64s %16s", hmac_hex, seq_hex) != 2) {
+		return false;
+	}
+	/* Znajdź treść za dwiema spacjami-polami */
+	content_start = line;
+	int spaces = 0;
+	while (*content_start && spaces < 2) {
+		if (*content_start++ == ' ') spaces++;
+	}ified_line[IPC_MAX_MSG_SIZE];
+	if (!verify_message_hmac(c, line, verified_line, sizeof(verified_line))) {
+		client_send(c, "ERR 403 bad signature\n");
+		client_disconnect(c);
+		return;
+	}
+
+	char verb[32], rest[IPC_MAX_MSG_SIZE];
+	rest[0] = '\0';
+	sscanf(verified_
+	/* Zbuduj "signed data": "<seq_hex>:<treść>" */
+	char signed_data[IPC_MAX_MSG_SIZE + 32];
+	int sd_len = snprintf(signed_data, sizeof(signed_data),
+		"%s:%s", seq_hex, content_start);
+	if (sd_len < 0 || (size_t)sd_len >= sizeof(signed_data)) return false;
+
+	/* Sprawdź seq_recv — chroń przed atakami powtarzania */
+	uint64_t seq_val = (uint64_t)strtoull(seq_hex, NULL, 16);
+	if (seq_val != c->seq_recv) {
+		wlr_log(WLR_ERROR,
+			"ipc: fd=%d błędna sekwencja %" PRIu64 " (oczekiwano %" PRIu64 ")",
+			c->fd, seq_val, c->seq_recv);
+		return false;
+	}
+
+	/* Oblicz HMAC-SHA256(token, signed_data) */
+	uint8_t expected[32];
+	unsigned int hmac_len = 0;
+	HMAC(EVP_sha256(),
+		c->ipc->session_token, (int)sizeof(c->ipc->session_token),
+		(const uint8_t *)signed_data, (size_t)sd_len,
+		expected, &hmac_len);
+
+	/* Porównaj z odebranym (constant-time) */
+	char expected_hex[65];
+	bytes_to_hex(expected, 32, expected_hex);
+	if (CRYPTO_memcmp(hmac_hex, expected_hex, 64) != 0) {
+		wlr_log(WLR_ERROR,
+			"ipc: fd=%d nieprawidłowy podpis HMAC — rozłączam", c->fd);
+		return false;
+	}
+
+	c->seq_recv++;
+	strncpy(out, content_start, out_size - 1);
+	out[out_size - 1] = '\0';
+	return true;
+}
+
 		char out[IPC_MAX_MSG_SIZE];
 		snprintf(out, sizeof(out), "OK %s\n", off ? payload : "[]");
 		client_send(c, out);
@@ -316,6 +411,66 @@ static void handle_query(ipc_client *c, const char *query_str) {
 	} else {
 		client_send(c, "ERR 404 unknown query\n");
 	}
+}
+
+/* ------------------------------------------------------------------ */
+/* Weryfikacja HMAC-SHA256 wiadomości od klienta                       */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Weryfikuje wiadomość z podpisem. Format: "<hmac_hex> <seq_hex> <treść>"
+ * hmac = HMAC-SHA256(session_token, "<seq_hex>:<treść>")
+ * Zwraca true i zapisuje treść do out, lub false gdy podpis/seq błędny.
+ */
+static bool verify_message_hmac(ipc_client *c, const char *line,
+		char *out, size_t out_size) {
+	char hmac_hex[65];
+	char seq_hex[17];
+
+	if (sscanf(line, "%64s %16s", hmac_hex, seq_hex) != 2)
+		return false;
+
+	/* Znajdź treść po dwóch tokenach */
+	const char *p = line;
+	int spaces = 0;
+	while (*p && spaces < 2) {
+		if (*p++ == ' ') spaces++;
+	}
+	if (spaces < 2) return false;
+
+	/* Sprawdź licznik sekwencji */
+	uint64_t seq_val = (uint64_t)strtoull(seq_hex, NULL, 16);
+	if (seq_val != c->seq_recv) {
+		wlr_log(WLR_ERROR,
+			"ipc: fd=%d błędna sekwencja %"PRIu64" (oczekiwano %"PRIu64")",
+			c->fd, seq_val, c->seq_recv);
+		return false;
+	}
+
+	/* Zbuduj signed_data: "<seq_hex>:<treść>" */
+	char signed_data[IPC_MAX_MSG_SIZE + 32];
+	int sd_len = snprintf(signed_data, sizeof(signed_data), "%s:%s", seq_hex, p);
+	if (sd_len < 0 || (size_t)sd_len >= sizeof(signed_data)) return false;
+
+	/* Oblicz HMAC-SHA256 */
+	uint8_t expected[32];
+	unsigned int hmac_len = 0;
+	HMAC(EVP_sha256(),
+		c->ipc->session_token, (int)sizeof(c->ipc->session_token),
+		(const uint8_t *)signed_data, (size_t)sd_len,
+		expected, &hmac_len);
+
+	char expected_hex[65];
+	bytes_to_hex(expected, 32, expected_hex);
+	if (CRYPTO_memcmp(hmac_hex, expected_hex, 64) != 0) {
+		wlr_log(WLR_ERROR, "ipc: fd=%d nieprawidłowy podpis HMAC", c->fd);
+		return false;
+	}
+
+	c->seq_recv++;
+	strncpy(out, p, out_size - 1);
+	out[out_size - 1] = '\0';
+	return true;
 }
 
 static void process_message(ipc_client *c, char *line) {
@@ -345,10 +500,17 @@ static void process_message(ipc_client *c, char *line) {
 		return;
 	}
 
-	/* Parsuj wiadomości po autoryzacji */
+	/* Parsuj wiadomości po autoryzacji — weryfikuj podpis HMAC */
+	char verified_line[IPC_MAX_MSG_SIZE];
+	if (!verify_message_hmac(c, line, verified_line, sizeof(verified_line))) {
+		client_send(c, "ERR 403 bad signature\n");
+		client_disconnect(c);
+		return;
+	}
+
 	char verb[32], rest[IPC_MAX_MSG_SIZE];
 	rest[0] = '\0';
-	sscanf(line, "%31s %4095[^\n]", verb, rest);
+	sscanf(verified_line, "%31s %4095[^\n]", verb, rest);
 
 	if (strcmp(verb, "SUBSCRIBE") == 0) {
 		int ev = atoi(rest);
