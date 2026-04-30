@@ -48,15 +48,15 @@ static void config_set_defaults(tektura_config *cfg) {
 	cfg->security.lock_on_sleep        = true;
 
 	/* [decorations] */
-	cfg->decorations.titlebar_height = 30;
+	cfg->decorations.titlebar_height = 32;
 	cfg->decorations.border_width    = 1;
 	cfg->decorations.button_size     = 14;
-	strncpy(cfg->decorations.color_active,   "#2e2e2e", sizeof(cfg->decorations.color_active) - 1);
-	strncpy(cfg->decorations.color_inactive, "#4d4d4d", sizeof(cfg->decorations.color_inactive) - 1);
-	strncpy(cfg->decorations.color_border,   "#6699e6", sizeof(cfg->decorations.color_border) - 1);
-	strncpy(cfg->decorations.color_btn_close,"#e64545", sizeof(cfg->decorations.color_btn_close) - 1);
-	strncpy(cfg->decorations.color_btn_min,  "#f5c021", sizeof(cfg->decorations.color_btn_min) - 1);
-	strncpy(cfg->decorations.color_btn_max,  "#45c145", sizeof(cfg->decorations.color_btn_max) - 1);
+	strncpy(cfg->decorations.color_active,   "#f7fbff", sizeof(cfg->decorations.color_active) - 1);
+	strncpy(cfg->decorations.color_inactive, "#dce7f5", sizeof(cfg->decorations.color_inactive) - 1);
+	strncpy(cfg->decorations.color_border,   "#66a8ff", sizeof(cfg->decorations.color_border) - 1);
+	strncpy(cfg->decorations.color_btn_close,"#ff6b6b", sizeof(cfg->decorations.color_btn_close) - 1);
+	strncpy(cfg->decorations.color_btn_min,  "#ffd24d", sizeof(cfg->decorations.color_btn_min) - 1);
+	strncpy(cfg->decorations.color_btn_max,  "#52c985", sizeof(cfg->decorations.color_btn_max) - 1);
 	strncpy(cfg->decorations.default_mode, "auto", sizeof(cfg->decorations.default_mode) - 1);
 	cfg->decorations.force_csd_apps[0] = '\0';
 	cfg->decorations.force_ssd_apps[0] = '\0';
